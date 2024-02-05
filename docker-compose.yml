@@ -17,7 +17,7 @@ services:
     environment:
       - PORT=3000
       - DB_USER=postgres
-      - DB_PASSWORD=postgres
+      - DB_PASSWORD=password
       - DB_NAME=postgres
       - DB_HOST=postgres
       - DB_PORT=5432
