@@ -11,6 +11,7 @@ export class ProductStoresService {
     @InjectRepository(Product) private productRepository: Repository<Product>,
     @InjectRepository(Store) private storeRepository: Repository<Store>,
   ) {}
+
   async findStoreFromProduct(productId: number, storeId: number) {
     const product = await this.productRepository.findOne({
       relations: {
@@ -87,7 +88,18 @@ export class ProductStoresService {
       throw new NotFoundException(`Product ${productId} not found`);
     }
 
-    product.stores = await this.storeRepository.findBy({ id: In(payload.stores) });
+    const resultStores = await this.storeRepository.findBy({ id: In(payload.stores) });
+
+    if (payload.stores.length !== resultStores.length) {
+      const storesNotFound = payload.stores.filter(s => !resultStores.map(({ id }) => id).includes(s))
+      throw new NotFoundException(`Stores not found: [${storesNotFound}]`)
+    }
+
+    //payload.stores.filter(s => product.stores.includes(s));
+    //arr1.filter(x => !arr2.includes(x));
+
+    product.stores = resultStores;
+
     return this.productRepository.save(product);
   }
 
@@ -101,6 +113,12 @@ export class ProductStoresService {
 
     if (!product) {
       throw new NotFoundException(`Product ${productId} not found`);
+    }
+
+    const store = product.stores.find((s) => s.id === storeId)
+
+    if (!store) {
+      throw new NotFoundException(`Store ${storeId} not found`);
     }
 
     product.stores = product.stores.filter((s) => s.id !== storeId);
