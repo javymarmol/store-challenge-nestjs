@@ -1,53 +1,16 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Product } from './entities/product.entity';
+import { UpdateProductStoresDto } from '../dto/update-product-stores.dto';
 import { In, Repository } from 'typeorm';
-import { Store } from '../stores/entities/store.entity';
-import { UpdateProductStoresDto } from './dto/update-product-stores.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Product } from '../entities/product.entity';
+import { Store } from '../../stores/entities/store.entity';
 
 @Injectable()
-export class ProductsService {
+export class ProductStoresService {
   constructor(
     @InjectRepository(Product) private productRepository: Repository<Product>,
     @InjectRepository(Store) private storeRepository: Repository<Store>,
   ) {}
-
-  create(createProductDto: CreateProductDto) {
-    const product = this.productRepository.create(createProductDto);
-    return this.productRepository.save(product);
-  }
-
-  async findAll() {
-    return await this.productRepository.find();
-  }
-
-  async findOne(id: number) {
-    const product = await this.productRepository.findOneBy({ id });
-    if (!product) {
-      throw new NotFoundException(`Product ${id} not found`);
-    }
-    return product;
-  }
-
-  async update(id: number, updateProductDto: UpdateProductDto) {
-    const product = await this.productRepository.findOneBy({ id });
-    if (!product) {
-      throw new NotFoundException(`Product ${id} not found`);
-    }
-    this.productRepository.merge(product, updateProductDto);
-    return await this.productRepository.save(product);
-  }
-
-  async remove(id: number) {
-    const product = await this.productRepository.findOneBy({ id });
-    if (!product) {
-      throw new NotFoundException(`Product ${id} not found`);
-    }
-    return this.productRepository.delete(product);
-  }
-
   async findStoreFromProduct(productId: number, storeId: number) {
     const product = await this.productRepository.findOne({
       relations: {
